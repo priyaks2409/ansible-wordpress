@@ -1,0 +1,12 @@
+---
+ - name: Restarted apache2
+   ansible.builtin.service:
+        name: apache2
+        state: restarted
+   listen: Restarted web services
+ - name: Restarted mysql
+   ansible.builtin.service:
+        name: mysql
+        state: restarted
+   listen: Restarted web services
+

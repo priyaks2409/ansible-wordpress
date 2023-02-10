@@ -1,0 +1,74 @@
+---
+    - name: Installing LAMP
+      ansible.builtin.apt:
+        name: "{{item}}"
+        state: present
+        update_cache: yes
+      loop: "{{users}}"
+      notify: Restarted web services
+    - name: Flusing handlers
+      ansible.builtin.meta: flush_handlers
+    - name: Create new DB
+      community.mysql.mysql_db:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: blog
+        state: present
+    - name: Create DB user
+      community.mysql.mysql_user:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+        name: bloguser
+        password: bloguser123
+        priv:
+          blog.*: 'ALL,GRANT'
+        host: localhost
+    - name: Copy apache configuration files
+      ansible.builtin.template:
+        src: templates/apache2.conf.j2
+        dest: "{{config_dest}}"
+      changed_when: true
+      notify: Restarted web services
+    - name: Downloading wordpress files
+      ansible.builtin.unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: "{{web_dest}}"
+        remote_src: yes
+    - name: Copying to document root
+      ansible.builtin.copy:
+        src: /var/www/html/wordpress/
+        dest: /var/www/html
+        remote_src: yes
+        directory_mode: yes
+    - name: Remove indext.html
+      ansible.builtin.file:
+        path: /var/www/html/index.html
+        state: absent
+    - name: Renaming wp-config
+      ansible.builtin.copy:
+        src: /var/www/html/wp-config-sample.php
+        dest: /var/www/html/wp-config.php
+        remote_src: yes
+    - name: Replace DB name
+      ansible.builtin.replace:
+        path: /var/www/html/wp-config.php
+        regexp: database_name_here
+        replace: blog
+    - name: Replace DB user
+      ansible.builtin.replace:
+        path: /var/www/html/wp-config.php
+        regexp: username_here
+        replace: bloguser
+    - name: Replace password
+      ansible.builtin.replace:
+        path: /var/www/html/wp-config.php
+        regexp: password_here
+        replace: bloguser123
+    - name: Changing ownership
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+      notify: Restarted web services
+

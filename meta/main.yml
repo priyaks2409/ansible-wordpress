@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: apachewordpress
+  author: Priya KS
+  description: Role to setup a quick and simple wordpress with apache
+
+  license: GNU GPLv3
+
+  min_ansible_version: 2.9
+
+
+  galaxy_tags: [wordpress, apachewordpress, fast-wordpress, python]
+
+dependencies: []

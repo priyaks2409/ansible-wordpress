@@ -1,0 +1,9 @@
+---
+users:
+      - apache2
+      - php
+      - php-mysql
+      - mysql-server
+      - python3-pymysql
+
+
